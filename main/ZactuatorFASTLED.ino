@@ -123,7 +123,7 @@ void MQTTtoFASTLED(char* topicOri, JsonObject& jsonData) {
 
 #  ifdef simpleReceiving
 void MQTTtoFASTLED(char* topicOri, char* datacallback) {
-  Log.trace(F("MQTTtoFASTLED: " CR));
+  Log.trace(F("MQTTtoFASTLED SIMPLE: " CR));
   currentLEDState = GENERAL;
   long number = 0;
   if (cmpToMainTopic(topicOri, subjectMQTTtoFASTLED)) {
@@ -134,6 +134,7 @@ void MQTTtoFASTLED(char* topicOri, char* datacallback) {
     }
     FastLED.show();
   } else if (cmpToMainTopic(topicOri, subjectMQTTtoFASTLEDsetbrightness)) {
+    Log.notice(F("fastled setbrightness: %l"));
     number = (long)strtol(&datacallback[1], NULL, 16);
     Log.notice(F("Number: %l" CR), number);
     FastLED.setBrightness(number);

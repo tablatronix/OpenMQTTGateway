@@ -33,7 +33,7 @@
 #define subjectGTWFASTLEDtoMQTT           "/FASTLEDtoMQTT" //same color on all LEDs in #RRGGBB
 
 // How many leds in your strip?
-#define FASTLED_NUM_LEDS 16
+#define FASTLED_NUM_LEDS 2
 
 // Uncomment/edit one of the following lines for your leds arrangement.
 
@@ -76,10 +76,10 @@
 #  define FASTLED_DATA_GPIO D2 // only D2 works by me
 //#define FASTLED_CLOCK_GPIO 13
 #elif ESP32
-#  define FASTLED_DATA_GPIO  16
+#  define FASTLED_DATA_GPIO  19
 #  define FASTLED_CLOCK_GPIO 13
 #else
-#  define FASTLED_DATA_GPIO  10
+#  define FASTLED_DATA_GPIO  19
 #  define FASTLED_CLOCK_GPIO 13
 #endif
 

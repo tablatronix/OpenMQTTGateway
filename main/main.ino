@@ -569,6 +569,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
   // In order to republish this payload, a copy must be made
   // as the orignal payload buffer will be overwritten whilst
   // constructing the PUBLISH packet.
+  Log.trace(F("length: %s" CR), (String)length);
   Log.trace(F("Hey I got a callback %s" CR), topic);
   // Allocate the correct amount of memory for the payload copy
   byte* p = (byte*)malloc(length + 1);
@@ -1659,7 +1660,7 @@ void receivingMQTT(char* topicOri, char* datacallback) {
   auto error = deserializeJson(jsonBuffer, datacallback);
   if (error) {
     Log.error(F("deserialize MQTT data failed: %s" CR), error.c_str());
-    return;
+    // return;
   }
 
 #if defined(ZgatewayRF) || defined(ZgatewayIR) || defined(ZgatewaySRFB) || defined(ZgatewayWeatherStation)

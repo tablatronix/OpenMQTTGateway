@@ -32,6 +32,9 @@
 #  define OMG_VERSION "version_tag"
 #endif
 
+#define LOG_LEVEL LOG_LEVEL_VERBOSE
+#define PublishOnlySensors true
+
 /*-------------CONFIGURE WIFIMANAGER-------------(only ESP8266 & SONOFF RFBridge)*/
 /*
  * The following parameters are set during the WifiManager setup process:
@@ -54,14 +57,14 @@
 // Any definition of Gateway_Name will be ignored. The Gateway_Short_name _ MAC will be used as the access point name.
 //#define USE_MAC_AS_GATEWAY_NAME
 #ifndef Gateway_Name
-#  define Gateway_Name "OpenMQTTGateway"
+#  define Gateway_Name "OpenMQTTGateway_ESP32_BLE"
 #endif
 #ifndef Gateway_Short_Name
 #  define Gateway_Short_Name "OMG"
 #endif
 
 #ifndef Base_Topic
-#  define Base_Topic "home/"
+#  define Base_Topic "ble/"
 #endif
 
 /*-------------DEFINE YOUR NETWORK PARAMETERS BELOW----------------*/
@@ -162,7 +165,7 @@ const byte mac[] = {0xDE, 0xED, 0xBA, 0xFE, 0x54, 0x95}; //W5100 ethernet shield
 #  define MQTT_PASS "your_password"
 #endif
 #ifndef MQTT_SERVER
-#  define MQTT_SERVER "192.168.1.17"
+#  define MQTT_SERVER "192.168.100.17"
 #endif
 #ifndef MQTT_PORT
 #  define MQTT_PORT "1883"
@@ -356,7 +359,7 @@ int lowpowermode = DEFAULT_LOW_POWER_MODE;
 //example
 // home/OpenMQTTGateway_ESP32_DEVKIT/BTtoMQTT/4XXXXXXXXXX4/rssi -63.0
 // home/OpenMQTTGateway_ESP32_DEVKIT/BTtoMQTT/4XXXXXXXXXX4/servicedata fe0000000000000000000000000000000000000000
-//#define simpleReceiving true //comment if you don't want to use old way reception analysis
+#define simpleReceiving true //comment if you don't want to use old way reception analysis
 
 /*-------------DEFINE YOUR OTA PARAMETERS BELOW----------------*/
 #ifndef ota_hostname
@@ -414,9 +417,9 @@ int lowpowermode = DEFAULT_LOW_POWER_MODE;
 #endif
 
 #ifdef ESP8266
-//#  define TRIGGER_GPIO 14 // pin D5 as full reset button (long press >10s)
+#  define TRIGGER_GPIO 0 // pin D5 as full reset button (long press >10s)
 #elif ESP32
-//#  define TRIGGER_GPIO 0 // boot button as full reset button (long press >10s)
+#  define TRIGGER_GPIO 0 // boot button as full reset button (long press >10s)
 #endif
 
 //      VCC   ------------D|-----------/\/\/\/\ -----------------  Arduino PIN
