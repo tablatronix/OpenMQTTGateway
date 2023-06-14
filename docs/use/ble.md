@@ -1,4 +1,10 @@
 # BLE gateway
+
+::: warning
+We strongly encourage the use of a white-list (see below) so as to collect data from your devices only and not from other MAC addresses.
+By default the gateway scans the advertizing BLE devices nearby with their MAC addresses. Depending on your country, it may be illegal to monitor networks for MAC addresses, especially on networks that you do not own. Please check your country's laws (for US Section 18 U.S. Code § 2511) - [discussion here](https://github.com/schollz/howmanypeoplearearound/issues/4).
+:::
+
 ## Receiving signals from BLE beacon devices for Presence detection
 
 Subscribe to all the messages with mosquitto or open your MQTT client software:
@@ -26,7 +32,7 @@ Note that you can find apps to simulate beacons and do some tests like [Beacon s
 IOS version >=10 devices advertise without an extra app a mac address, nevertheless this address [changes randomly](https://github.com/1technophile/OpenMQTTGateway/issues/71) and cannot be used for presence detection. You must install an app to advertise a fixed MAC address.
 
 
-## Receiving signals Mi Flora/ Mi jia device/ LYWDS02, ClearGrass or Mi scale
+## Receiving signals from BLE devices Mi Flora, Mi jia, LYWDS02, LYWSD03MMC, ClearGrass, Mi scale and [many more](https://compatible.openmqttgateway.com/index.php/devices/ble-devices/)
 So as to receive BLE sensors data you need either a simple ESP32 either an ESP8266/arduino + HM10/11 with firmware >= v601
 The mi flora supported firmware is >3.1.8
 
@@ -46,6 +52,8 @@ Note that the gateway return one or two measurement value each time. The differe
 * Impedance
 * Battery
 * Voltage
+* Open
+* Presence
 
 The infos will appear like this on your MQTT broker:
 
@@ -103,7 +111,7 @@ In this case you should deactivate the BLE connection mechanism to avoid concurr
 For certain devices like LYWSD03MMC OpenMQTTGateway use a connection (due to the fact that the advertized data are encrypted), this connection mechanism is launched after every `ScanBeforeConnect` per default, you can modify it by following the procedure below.
 :::
 
-## Setting the number of scans between before connect attempt
+## Setting the number of scans between connection attempts
 
 If you want to change the number of BLE scans that are done before a BLE connect you can change it by MQTT, if you want the BLE connect to be every 30 scans:
 
@@ -151,6 +159,63 @@ you can also accept all the devices by the following command:
 `mosquitto_pub -t home/OpenMQTTGateway/commands/MQTTtoBT/config -m '{"minrssi":-200}'`
 
 The default value is set into config_BT.h
+
+## Read/write BLE characteristics over MQTT (ESP32 only)
+
+The gateway can read and write BLE characteristics from devices and provide the results in an MQTT message.  
+::: tip
+These actions will be taken on the next BLE connection, which occurs after scanning and after the scan count is reached, [see above to set this.](#setting-the-number-of-scans-between-connection-attempts)  
+This can be overridden by providing an (optional) parameter `"immediate": true` within the command. This will cause the BLE scan to stop if currently in progress, allowing the command to be immediately processed. All other connection commands in queue will also be processed for the same device, commands for other devices will be deferred until the next normally scheduled connection.
+
+**Note** Some devices need to have the mac address type specified. You can find this type by checking the log/mqtt data and looking for "mac_type". By default the type is 0 but some devices use different type values. You must specify the correct type to connect successfully.  
+To specify the MAC address type add the parameter `"mac_type"` to the command. For example `"mac_type": 1` to connect with a device with the MAC address type of 1.
+:::
+
+### Example write command
+```
+mosquitto_pub -t home/OpenMQTTGateway/commands/MQTTtoBT/config -m '{
+  "ble_write_address":"AA:BB:CC:DD:EE:FF",
+  "ble_write_service":"cba20d00-224d-11e6-9fb8-0002a5d5c51b",
+  "ble_write_char":"cba20002-224d-11e6-9fb8-0002a5d5c51b",
+  "ble_write_value":"TEST",
+  "value_type":"STRING",
+  "ttl":4,
+  "immediate":true }'
+```
+Response:
+```
+{
+  "id":"AA:BB:CC:DD:EE:FF",
+  "service":"cba20d00-224d-11e6-9fb8-0002a5d5c51b",
+  "characteristic":"cba20002-224d-11e6-9fb8-0002a5d5c51b",
+  "write":"TEST",
+  "success":true
+}
+```
+### Example read command
+```
+mosquitto_pub -t home/OpenMQTTGateway/commands/MQTTtoBT/config -m '{
+  "ble_read_address":"AA:BB:CC:DD:EE:FF",
+  "ble_read_service":"cba20d00-224d-11e6-9fb8-0002a5d5c51b",
+  "ble_read_char":"cba20002-224d-11e6-9fb8-0002a5d5c51b",
+  "value_type":"STRING",
+  "ttl": 2 }'
+```
+Response:
+```
+{
+  "id":"AA:BB:CC:DD:EE:FF",
+  "service":"cba20d00-224d-11e6-9fb8-0002a5d5c51b",
+  "characteristic":"cba20002-224d-11e6-9fb8-0002a5d5c51b",
+  "read":"TEST",
+  "success":true
+}
+```
+
+::: tip
+The `ttl` parameter is the number of attempts to connect (defaults to 1), which occur after the BLE scan completes.  
+`value_type` can be one of: STRING, HEX, INT, FLOAT. Default is STRING if omitted in the message.
+:::
 
 ## Other
 

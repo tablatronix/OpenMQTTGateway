@@ -40,6 +40,13 @@ extern int btQueueLengthCount;
 #    define AttemptBLECOnnect true //do we by default attempt a BLE connection to sensors with ESP32
 #  endif
 bool bleConnect = AttemptBLECOnnect;
+
+// Sets whether to filter publishing of scanned devices that require a connection.
+// Setting this to 1 prevents overwriting the publication of the device connection data with the advertised data (Recommended for use with OpenHAB).
+#  ifndef BLE_FILTER_CONNECTABLE
+#    define BLE_FILTER_CONNECTABLE 0
+#  endif
+#  include "NimBLEDevice.h"
 #endif
 
 /*----------------------BT topics & parameters-------------------------*/
@@ -109,38 +116,16 @@ bool hassPresence = HassPresence;
 #  define pubBLEManufacturerData false // define true if you want to publish the manufacturer's data (sometimes contains characters that aren't valid with receiving client)
 #endif
 
+#ifndef pubUnknownBLEManufacturerData
+#  define pubUnknownBLEManufacturerData true // define true if you want to publish the manufacturer's data (sometimes contains characters that aren't valid with receiving client)
+#endif
+
 #ifndef pubBLEServiceUUID
 #  define pubBLEServiceUUID false // define true if you want to publish the service UUID data
 #endif
 
 /*-------------------HOME ASSISTANT ROOM PRESENCE ----------------------*/
 #define subjectHomePresence "home_presence/" // will send Home Assistant room presence message to this topic (first part is same for all rooms, second is room name)
-
-enum ble_sensor_model {
-  UNKNOWN_MODEL = -1,
-  BEGINING = 0,
-  HHCCJCY01HHCC,
-  VEGTRUG,
-  LYWSDCGQ,
-  JQJCY01YM,
-  LYWSD02, //5
-  CGG1,
-  CGP1W,
-  MUE4094RT,
-  CGD1,
-  MIBAND, //10
-  XMTZC04HM,
-  XMTZC05HM,
-  INKBIRD,
-  LYWSD03MMC,
-  MHO_C401,
-  LYWSD03MMC_ATC,
-  INODE_EM,
-  CGDK2,
-  LYWSD03MMC_PVVX,
-  CGH1,
-  CGPR1,
-};
 
 /*-------------------PIN DEFINITIONS----------------------*/
 #if !defined(BT_RX) || !defined(BT_TX)
@@ -155,5 +140,51 @@ enum ble_sensor_model {
 #    define BT_TX 6 //arduino TX connect HM-10 or 11 RX
 #  endif
 #endif
+
+/*---------------INTERNAL USE: DO NOT MODIFY--------------*/
+#ifdef ESP32
+enum ble_val_type {
+  BLE_VAL_STRING = 0,
+  BLE_VAL_HEX,
+  BLE_VAL_INT,
+  BLE_VAL_FLOAT,
+};
+
+struct BLEAction {
+  std::string value;
+  char addr[18];
+  int addr_type;
+  NimBLEUUID service;
+  NimBLEUUID characteristic;
+  bool write;
+  bool complete;
+  uint8_t ttl;
+  ble_val_type value_type;
+};
+#endif
+
+struct BLEdevice {
+  char macAdr[18];
+  int macType;
+  bool isDisc;
+  bool isWhtL;
+  bool isBlkL;
+  bool connect;
+  int sensorModel_id;
+};
+
+class BLEconectable {
+public:
+  enum id {
+    MIN = 1000,
+    LYWSD03MMC,
+    MHO_C401,
+    DT24_BLE,
+    XMWSDJ04MMC,
+    MAX,
+  };
+};
+
+JsonObject& getBTJsonObject(const char* json = NULL, bool haPresenceEnabled = true);
 
 #endif

@@ -19,6 +19,20 @@ OFF command:
 ON command:
 `mosquitto_pub -t home/OpenMQTTGateway_MEGA/commands/MQTTtoONOFF -m '{"gpio":15,"cmd":1}'`
 
+Since v0.9.9, you could ask for a short activation, the PIN will change state for only half a second.
+
+For example you could use it with a relay board to activate an existing step relay. So your home automation act as a supplementary switch and do not interfere with the existing switch in your house.
+
+It's available only with [json receiving](../upload/pio.md#api):
+
+Goes ON for half a second, then back to OFF:
+`mosquitto_pub -t home/OpenMQTTGateway_MEGA/commands/MQTTtoONOFF -m '{"gpio":15,"cmd":"high_pulse"}'`
+
+Goes OFF for half a second, then back to ON:
+`mosquitto_pub -t home/OpenMQTTGateway_MEGA/commands/MQTTtoONOFF -m '{"gpio":15,"cmd":"low_pulse}"'`
+
+Be aware that outputs are OFF by default when the board first start.
+
 ## FASTLED
 ### The FASTLED module support 2 different operation modes
 1. control one specific RGB LED
@@ -101,6 +115,9 @@ Only json messages are supported.
 The json message must contain two properties:
 * remote: the index of the remote which is used to send the command (index start at zero)
 * command: the command which should be send with the remote as string, see [table of command names](https://github.com/Legion2/Somfy_Remote_Lib#available-commands).
+
+Optionally it can contain the following property:
+* repeat: the number how often the command is repeated, default 4. Should be used to simulate long button presses, by increasing the repeat number, e.g. 20.
 
 ::: tip
 The middle button on physical Somfy RTS Remote controls is called "My".
