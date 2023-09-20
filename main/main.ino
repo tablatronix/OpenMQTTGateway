@@ -771,6 +771,10 @@ void setup() {
   SetupIndicatorSendReceive();
   SetupIndicatorInfo();
   SetupIndicators(); // For RGB Leds
+ 
+  WiFi.setSleep(false);
+  WiFi.setMinSecurity(WIFI_AUTH_WPA_PSK);
+  WiFi.setScanMethod(WIFI_ALL_CHANNEL_SCAN);  
 
 #if defined(ESP8266) || defined(ESP32)
   delay(100); //give time to start the flash and avoid issue when reading the preferences
@@ -1438,7 +1442,8 @@ void setup_wifimanager(bool reset_settings) {
     }
   }
 
-  wifiManager.setDebugOutput(WM_DEBUG_LEVEL);
+  wifiManager.setDebugOutput(true);
+  wifiManager.debugPlatformInfo();
 
   // The extra parameters to be configured (can be either global or just in the setup)
   // After connecting, parameter.getValue() will get you the configured value
@@ -1857,6 +1862,10 @@ void loop() {
 #if defined(ESP8266) || defined(ESP32) && !defined(ESP32_ETHERNET)
 #  ifdef ESP32 // If used with ESP8266 this method prevent the reconnection
     WiFi.reconnect();
+    delay(2000);
+    if (failure_number_ntwk++ > maxRetryWatchDog) {
+      ESPRestart(2);
+    }
 #  endif
     Log.warning(F("wifi" CR));
 #else
